@@ -78,7 +78,6 @@ impl ReadBuffer {
 }
 
 
-
 // HuffmanNode is used to construct the binary tree
 #[derive(Debug, Eq, PartialEq)]
 pub struct HuffmanNode {
@@ -144,10 +143,8 @@ impl HuffmanNode {
                 for _i in 0..children{
                     if let Some(direction) = stream.read_byte() {
                         if direction == 0x4c {
-                            println!("LeftNode");
                             left = HuffmanNode::from_stream(stream);
                         } else if direction == 0x52 {
-                            println!("RightNode");
                             right = HuffmanNode::from_stream(stream);
                         }
                     }
@@ -155,7 +152,6 @@ impl HuffmanNode {
             } 
             
             if let Some(symbol) = stream.read_byte() {
-                println!("Found symbol {:02x}", symbol);
                 if left.is_none() || right.is_none() {
                     // If either left or right is None, create a leaf node
                     return Some(Box::new(HuffmanNode::leaf(symbol, 0)));
@@ -223,8 +219,24 @@ impl HuffmanCode {
              code.bits = bits;
              bits += 1;
         }
-
         sorted
+    }
+
+    pub fn as_array(codes: &Vec<Self>) -> [&Self; 256] {
+        const DEFAULT: HuffmanCode = HuffmanCode {
+            symbol: 0,
+            frequency: 0,
+            length: 0,
+            bits: 0
+        };
+
+        let mut output_array: [&Self; 256] = [&DEFAULT; 256];
+        
+        for code in codes.iter(){
+            output_array[code.symbol as usize] = code;
+        }
+
+        output_array
     }
 
     // Used to output the codes in a tabular format
@@ -282,6 +294,63 @@ impl HuffmanTable {
         }
     }
 
+    pub fn encode_tree(root: &HuffmanNode) -> Vec<u8> {
+        let mut encoded_tree: Vec<u8> = Vec::new();
+        HuffmanTable::serialize_node(root, &mut encoded_tree);
+        encoded_tree
+    }
+
+    fn serialize_node(node: &HuffmanNode, encoded_tree: &mut Vec<u8>) {
+        if let Some(symbol) = node.symbol {
+            encoded_tree.push(0); // 0 children
+            encoded_tree.push(symbol);
+        } else {
+            encoded_tree.push(2); // 2 children
+            if let Some(left) = &node.left {
+                encoded_tree.push(0x4c);
+                HuffmanTable::serialize_node(left, encoded_tree);
+            }
+            if let Some(right) = &node.right {
+                encoded_tree.push(0x52);
+                HuffmanTable::serialize_node(right, encoded_tree);
+            }
+            encoded_tree.push(0x00); // symbol for node variant
+        }
+    }
+
+    pub fn encode(codesheet: [&HuffmanCode; 256], data: Vec<u8>) -> Vec<u8>{
+
+        let mut encoded_data: Vec<u8> = Vec::new();
+        let mut byte: u8 = 0;
+        let mut bits_written = 0;
+
+        for &symbol in data.iter() {
+            let code = codesheet[symbol as usize];
+            //println!("{:b}\t{}", code.bits, code.length);
+            for i in 0..code.length {
+                let bit = (code.bits >> (code.length -1 - i)) & 1 == 1;
+                // println!("Putting bit {:b} into the byte", bit as u8);
+                byte |= (bit as u8) << (7 - (bits_written));
+                bits_written += 1;
+
+                if bits_written == 8 {
+                    // println!("Writing {:08b}", byte);
+                    encoded_data.push(byte);
+                    byte = 0;
+                    bits_written = 0;
+                }
+            }
+        }
+
+        if bits_written > 0 {
+            encoded_data.push(byte);
+        }
+
+        encoded_data
+
+    }
+
+
     // Takes in the root node of a table, along with a bit vector of compressed data
     // Outputs the decompressed data, or panics.
     pub fn decode(root: &HuffmanNode, bits: Vec<bool>) -> Vec<u8> {
@@ -317,7 +386,7 @@ impl HuffmanTable {
 
 
 fn main() {
-    // Example of looking at reading in uncompressed data and making the table
+    // Example of compressing an uncompressed save, without a pre-existing huffman tree
     let mut frequencies = [0; 256]; // We known the save can have any byte value
     let content = fs::read("./data/saves/SampleSave_decompressedv2.01")
         .expect("Should have been able to read the file");
@@ -328,23 +397,18 @@ fn main() {
 
     // Construct the tree based off of the frequencies
     let tree = HuffmanNode::from_frequencies(frequencies);
-
-    // Output the codes
     let codes = HuffmanCode::from_tree(&tree);
-    println!("\nCodes:\n=========");
-    HuffmanCode::describe(&codes);
+    let codes_array = HuffmanCode::as_array(&codes);
+    let encoded_data: Vec<u8> = HuffmanTable::encode(codes_array, content);
 
-    let canonical = HuffmanCode::as_canonical(&codes);
-    println!("\nCanonical:\n=========");
-    HuffmanCode::describe(&canonical);
-
-    let table = HuffmanTable::from_codes(&canonical);
-    println!("\nTable:\n=========");
-    table.describe();
-
-
-    // Reading in a compressed file and decompressing it 
-    let compressed = fs::read("./data/saves/SampleSave.01")
+    let tree_data = HuffmanTable::encode_tree(&tree.unwrap());
+    
+    let mut compressed_file = fs::File::create( "./data/output/new_table.01").expect("Failed to create file!");
+    compressed_file.write_all(&tree_data).expect("Should have been able to write compressed file!");
+    compressed_file.write_all(&encoded_data).expect("Should have been able to write encoded data!");
+    
+    // Reading in the previous compressed file and decompressing it, the output uncompressed.01 should be identical to the input decompressed save from earlier.
+    let compressed = fs::read("./data/output/new_table.01")
         .expect("Should have been able to read the file");
 
     let mut buf = ReadBuffer::new(compressed);
@@ -354,7 +418,32 @@ fn main() {
         let decompressed = HuffmanTable::decode(&root, bits);
 
         // Output path must exist or it will panic!
-        let mut outfile = fs::File::create("./data/output/foo.01").expect("Failed to create file!");
+        let mut outfile = fs::File::create("./data/output/uncompressed.01").expect("Failed to create file!");
         outfile.write_all(&decompressed).expect("Should have been able to write!");
-    }   
+
+    }
+
+
+    // Testing compression using known good decompressed data, along with the Huffman tree from the original compressed save
+    // The final compressed.01 that is output should be identical to the Samplesave.01 input
+    let original_compressed_save = fs::read("./data/saves/SampleSave.01")
+        .expect("Should have been able to read the compressed save!");
+    let mut buf = ReadBuffer::new(original_compressed_save);
+
+    let tree = HuffmanNode::from_stream(&mut buf);
+
+    // This decompressed data is a known good sample, that matches how it is loaded onto the heap by the game.
+    let uncompressed_data = fs::read("./data/saves/SampleSave_decompressedv2.01")
+        .expect("Should have been able to read the uncompressed save!");
+
+    let codes = HuffmanCode::from_tree(&tree);
+    HuffmanCode::describe(&codes);
+    let codes_array = HuffmanCode::as_array(&codes);
+    let encoded_data: Vec<u8> = HuffmanTable::encode(codes_array, uncompressed_data);
+    let encoded_tree = HuffmanTable::encode_tree(&tree.unwrap());
+
+    let mut compressed_file = fs::File::create( "./data/output/compressed.02").expect("Failed to create file!");
+    compressed_file.write_all(&encoded_tree).expect("Should have been able to write compressed file!");
+    compressed_file.write_all(&encoded_data).expect("Should have been able to write encoded data!");
+    
 }
