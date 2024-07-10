@@ -18,8 +18,20 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
 
 ## High level details of how the saves work
 - Saves are not encrypted using anything like the xtx data files were.
-- Saves use some variant of [huffman coding](https://en.wikipedia.org/wiki/Huffman_coding) to compress the save file
-- First 1532 bytes of the save is a huffman tree
-- How to parse the tree is difficult for me to explain, but check the PoC python script for the parse_save_tree function
-- The tree is used to decode the remainder of the bytes
-- Afterwards, the game likely uses the data to construct the game state based off of a best guess at this point
+- Saves use a combination of an RLE style compression first, afterwards they use [huffman coding](https://en.wikipedia.org/wiki/Huffman_coding) to compress the save file further
+- When looking at the compressed save:
+    - First 1532 bytes of the save is a huffman tree
+    - The tree is a set of nested nodes, and the tree has exactly 256 leaf nodes (nodes with no children)
+    - The first byte indicates the number of children a node has (will either be 0x00 for a leaf node, or 0x02 for an inner node)
+        - If the first node is 0x02, the following byte will be a "direction" indicating whether the following data is for the left child node or right child node.
+        - 0x4c or "L" is used for left node
+        - 0x52 or "R" is usde for right node
+        - After the direction marker, the following bytes immediately after are for the child node
+    - The final byte will be the "symbol" value of the node
+        - Inner nodes will still read in a byte, just the byte will always be 0x00 (there is one leaf node that will have a symbol of 0x00 as well)
+- The tree is used to decode the remainder of the bytes before RLE decoding.
+- The RLE scheme is pretty simple, and just compresses repeated bytes, which will mostly be null byte values
+    - Read in a byte representing a length
+    - If positive, read n bytes from the input into the output
+    - If negative, insert the following byte into the output inverse n (making it positive) times
+- Afterwards, the data is then used to construct various structs and objects for the games state

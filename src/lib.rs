@@ -125,9 +125,9 @@ impl HuffmanTable {
 }
 
 
-pub fn decompress(input_Path: &str, output_path: &str){
+pub fn compress(input_path: &str, output_path: &str){
     let mut frequencies = [0; 256]; // We known the save can have any byte value
-    let content = fs::read( input_Path )
+    let content = fs::read( input_path )
         .expect("Should have been able to read the file");
 
     for key in content.iter() {
@@ -147,8 +147,8 @@ pub fn decompress(input_Path: &str, output_path: &str){
     compressed_file.write_all(&encoded_data).expect("Should have been able to write encoded data!");
 }
 
-pub fn compress(input_Path: &str, output_path: &str) {
-    let compressed = fs::read(input_Path)
+pub fn decompress(input_path: &str, output_path: &str) {
+    let compressed = fs::read(input_path)
         .expect("Should have been able to read the file");
 
     let mut buf = ReadBuffer::new(compressed);
