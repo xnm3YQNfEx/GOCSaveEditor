@@ -11,10 +11,9 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
 - Deserialization of game save into another data structure, maybe json?
 - Reserialization of the json back to bytes
 
-## Current Status
-- Save decompression appears to be working, but I've only tried with a handful of saves, no real testing done yet
-- Save compression does work, but only if you use an existing huffman tree from a save, this is my next goal to get working
-- Unknown about any further processing that is required though there are a few weird data formatting issues in strings, though that could also be a bug in my code
+## 2024-07-10 
+- Decompression appears to be working, but I've only tried with a handful of saves, no real testing done yet
+- Compression isn't complete, currently the compressed saves will be corrupted due to not using proper RLE encoding as the first step, should be added soon!
 
 ## High level details of how the saves work
 - Saves are not encrypted using anything like the xtx data files were.
