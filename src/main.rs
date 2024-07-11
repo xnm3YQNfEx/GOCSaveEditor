@@ -3,8 +3,8 @@ use GOCSaveEditor;
 
 fn main() {
     // Example of compressing an uncompressed save, without a pre-existing huffman tree
-    GOCSaveEditor::decompress("./data/saves/SampleSave_decompressedv2.01", "./data/output/new_table.01");
-    GOCSaveEditor::compress("./data/output/new_table.01", "./data/output/uncompressed.01");
+    GOCSaveEditor::decompress("./data/saves/SampleSave.01", "./data/output/decompressed.01");
+    GOCSaveEditor::compress("./data/output/decompressed.01", "./data/output/compressed.01");
         // Testing compression using known good decompressed data, along with the Huffman tree from the original compressed save
     // The final compressed.01 that is output should be identical to the Samplesave.01 input
     // let original_compressed_save = fs::read("./data/saves/SampleSave.01")

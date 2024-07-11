@@ -155,11 +155,43 @@ pub fn decompress(input_path: &str, output_path: &str) {
     let tree2 = HuffmanNode::from_stream(&mut buf);
     let bits = buf.remaining_bits();
     if let Some(root) = tree2 {
-        let decompressed = HuffmanTable::decode(&root, bits);
+        let mut decompressed = HuffmanTable::decode(&root, bits);
+        decompressed = runlengthdecode(&decompressed);
 
         // Output path must exist or it will panic!
         let mut outfile = fs::File::create(output_path).expect("Failed to create file!");
         outfile.write_all(&decompressed).expect("Should have been able to write!");
 
     }
+}
+
+fn runlengthdecode(input: &Vec<u8>) -> Vec<u8> {
+
+    let mut output: Vec<u8> = Vec::new();
+    let mut buf = ReadBuffer::new(input.clone());
+
+    while(buf.read_pos < buf.data.len()) {
+        if let Some(len) = buf.read_byte() {
+            let length = len as i8;
+
+            if length > 0 {
+                for i in 0..length {
+                    if let Some(byte) = buf.read_byte()
+                    {
+                        output.push(byte);
+                    }
+                    
+                }
+            } else if length < 0 {
+                if let Some(repeated_char) = buf.read_byte() {
+                    for i in 0..-length {
+                        output.push(repeated_char);
+                    }
+                }
+            } else {
+                panic!("Not sure why RLE has a zero length!!!!");
+            }
+        }
+    }
+    output
 }

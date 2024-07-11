@@ -3,8 +3,8 @@
 
 #[derive(Debug)]
 pub struct ReadBuffer {
-    data: Vec<u8>,
-    read_pos: usize,
+    pub data: Vec<u8>,
+    pub read_pos: usize,
 }
 
 impl ReadBuffer {
