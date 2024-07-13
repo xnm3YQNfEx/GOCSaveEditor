@@ -133,9 +133,6 @@ pub fn compress(input_path: &str, output_path: &str){
 
     data = runlength_encode(&data);
 
-    // let mut compressed_file2 = fs::File::create("./data/output/debug.enc").expect("Failed to create file!");
-    // compressed_file2.write_all(&data).expect("Should have been able to write compressed file!");
-
     let mut frequencies = [0; 256]; // We known the save can have any byte value
     for key in data.iter() {
         frequencies[*key as usize] += 1;
@@ -163,8 +160,7 @@ pub fn decompress(input_path: &str, output_path: &str) {
     let bits = buf.remaining_bits();
     if let Some(root) = tree2 {
         let mut decompressed = HuffmanTable::decode(&root, bits);
-        // let mut outfile = fs::File::create("./data/output/debug.dec").expect("Failed to create file!");
-        // outfile.write_all(&decompressed).expect("Should have been able to write!");
+
         decompressed = runlength_decode(&decompressed);
 
         // Output path must exist or it will panic!
@@ -281,18 +277,18 @@ fn runlength_encode(input: &Vec<u8>) -> Vec<u8> {
         //print!("{:?}", mode);
     }
     
-
     let len = temp.len() as i8;
-    print!("{:02x}",len);
-    if len > 1 {
-        if temp[0] == temp[1] {
-            output.push(-(len) as u8);
-            output.push(temp[0]);
-        } else {
-            output.push(len as u8);
-            output.extend(temp);
-
-        }   
+    if len > 0 {
+        match mode {
+            Mode::Normal => {
+                output.push(len as u8);
+                output.extend(temp.clone());
+            },
+            Mode::Repeated => {
+                output.push(-(len) as u8);
+                output.push(temp[0]);
+            }
+        }
     }
-    output
+    return output
 }
