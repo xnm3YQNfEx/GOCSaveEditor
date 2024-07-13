@@ -2,7 +2,7 @@ use huffman_node::HuffmanNode;
 use huffman_code::HuffmanCode;
 use read_buffer::ReadBuffer;
 use std::fs;
-use std::io::Write;
+use std::io::{stdout, Write};
 
 mod read_buffer;
 mod huffman_node;
@@ -126,11 +126,18 @@ impl HuffmanTable {
 
 
 pub fn compress(input_path: &str, output_path: &str){
-    let mut frequencies = [0; 256]; // We known the save can have any byte value
-    let content = fs::read( input_path )
+
+    
+    let mut data = fs::read( input_path )
         .expect("Should have been able to read the file");
 
-    for key in content.iter() {
+    data = runlength_encode(&data);
+
+    // let mut compressed_file2 = fs::File::create("./data/output/debug.enc").expect("Failed to create file!");
+    // compressed_file2.write_all(&data).expect("Should have been able to write compressed file!");
+
+    let mut frequencies = [0; 256]; // We known the save can have any byte value
+    for key in data.iter() {
         frequencies[*key as usize] += 1;
     }
 
@@ -138,7 +145,7 @@ pub fn compress(input_path: &str, output_path: &str){
     let tree = HuffmanNode::from_frequencies(frequencies);
     let codes = HuffmanCode::from_tree(&tree);
     let codes_array = HuffmanCode::as_array(&codes);
-    let encoded_data: Vec<u8> = HuffmanTable::encode(codes_array, content);
+    let encoded_data: Vec<u8> = HuffmanTable::encode(codes_array, data);
 
     let tree_data = HuffmanTable::encode_tree(&tree.unwrap());
     
@@ -156,16 +163,18 @@ pub fn decompress(input_path: &str, output_path: &str) {
     let bits = buf.remaining_bits();
     if let Some(root) = tree2 {
         let mut decompressed = HuffmanTable::decode(&root, bits);
-        decompressed = runlengthdecode(&decompressed);
+        // let mut outfile = fs::File::create("./data/output/debug.dec").expect("Failed to create file!");
+        // outfile.write_all(&decompressed).expect("Should have been able to write!");
+        decompressed = runlength_decode(&decompressed);
 
         // Output path must exist or it will panic!
-        let mut outfile = fs::File::create(output_path).expect("Failed to create file!");
-        outfile.write_all(&decompressed).expect("Should have been able to write!");
+        let mut outfile2 = fs::File::create(output_path).expect("Failed to create file!");
+        outfile2.write_all(&decompressed).expect("Should have been able to write!");
 
     }
 }
 
-fn runlengthdecode(input: &Vec<u8>) -> Vec<u8> {
+fn runlength_decode(input: &Vec<u8>) -> Vec<u8> {
 
     let mut output: Vec<u8> = Vec::new();
     let mut buf = ReadBuffer::new(input.clone());
@@ -175,7 +184,7 @@ fn runlengthdecode(input: &Vec<u8>) -> Vec<u8> {
             let length = len as i8;
 
             if length > 0 {
-                for i in 0..length {
+                for _i in 0..length {
                     if let Some(byte) = buf.read_byte()
                     {
                         output.push(byte);
@@ -189,9 +198,101 @@ fn runlengthdecode(input: &Vec<u8>) -> Vec<u8> {
                     }
                 }
             } else {
+                // Have yet to hit this
                 panic!("Not sure why RLE has a zero length!!!!");
             }
         }
+    }
+    output
+}
+
+
+fn runlength_encode(input: &Vec<u8>) -> Vec<u8> {
+    #[derive(Debug)]
+    enum Mode {
+        Normal,
+        Repeated
+    }
+    let mut output: Vec<u8> = Vec::new();
+    let mut temp: Vec<u8> = Vec::new();
+    let mut written: bool = true;
+    let mut mode = Mode::Normal;
+
+    let mut iterator = input.iter();
+    
+    if let Some(byte) = iterator.next() {
+        temp.push(*byte);
+    }
+    if let Some(byte) = iterator.next() {
+        temp.push(*byte);
+    }
+   
+    while let Some(byte) = iterator.next() {
+        let len = temp.len();
+        //println!("temp len: {}  output: {:?} temp: {:?}", temp.len(), output, temp);
+        if len > 126 {
+            panic!("Length of temp buffer in rle encode shouldn't be larger that 126! Was {}", len);
+        }
+        
+        if written {
+            if temp[len -1 ] == temp[len - 2] {
+                mode = Mode::Repeated;
+            } else {
+                mode = Mode::Normal;
+            }
+
+            written = false;
+        }
+        match mode {
+            Mode::Repeated => {
+                if *byte != temp[len - 1] || temp.len() == 126 {
+                    output.push(-(temp.len() as i8) as u8);
+                    output.push(temp[0]);
+                    temp.clear();
+                    written = true;
+
+                    temp.push(*byte);
+
+                    if let Some(next) = iterator.next(){
+                        temp.push(*next);
+                    }
+
+                } else {
+                    temp.push(*byte);
+                }
+            },
+            Mode::Normal => {
+                if *byte == temp[len - 1] || temp.len() == 126 {
+                    let prev = temp.pop();
+                    output.push(temp.len() as u8);
+                    output.extend(temp.clone());
+                    temp.clear();
+                    if prev.is_some() {
+                        temp.push(prev.unwrap());
+                    } else {
+                        panic!("Attempted to unwrap prev, but there was None");
+                    }
+                    written = true;
+                }
+                
+                temp.push(*byte);
+            }
+        }
+        //print!("{:?}", mode);
+    }
+    
+
+    let len = temp.len() as i8;
+    print!("{:02x}",len);
+    if len > 1 {
+        if temp[0] == temp[1] {
+            output.push(-(len) as u8);
+            output.push(temp[0]);
+        } else {
+            output.push(len as u8);
+            output.extend(temp);
+
+        }   
     }
     output
 }
