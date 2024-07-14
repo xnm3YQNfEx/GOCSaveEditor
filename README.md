@@ -11,11 +11,16 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
 - Deserialization of game save into another data structure, maybe json?
 - Reserialization of the json back to bytes
 
+## 2024-07-14
+- Decompression and compression are both working.
+- Need to do a clean up of the code a bit, after that going to look into using python for a basic front end
+- Looking into save format now, some details now added below
+
 ## 2024-07-10 
 - Decompression appears to be working, but I've only tried with a handful of saves, no real testing done yet
 - Compression isn't complete, currently the compressed saves will be corrupted due to not using proper RLE encoding as the first step, should be added soon!
 
-## High level details of how the saves work
+## High level details of how the compression works
 - Saves are not encrypted using anything like the xtx data files were.
 - Saves use a combination of an RLE style compression first, afterwards they use [huffman coding](https://en.wikipedia.org/wiki/Huffman_coding) to compress the save file further
 - When looking at the compressed save:
@@ -33,4 +38,42 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
     - Read in a byte representing a length
     - If positive, read n bytes from the input into the output
     - If negative, insert the following byte into the output inverse n (making it positive) times
+    - Can have multiple chunks that are the same type in a row, with maximum length of a chunk being 126
 - Afterwards, the data is then used to construct various structs and objects for the games state
+
+
+## Save file structure
+- first dword appears to be a count of objects, so far it's always been 0x19 for both saves and scenarios.
+- from there it loads the save data into a set of structs creating a linked list in a for loop using the previous dword as the limit
+    - Game then reads in a byte for the id or index of the first object. Stores it at offset 0x00. Game does check to see if multiple sections have the same value, likely to some exception handler.
+    - Reads in a dword, unknown what it's for, and always seems to be 0x00000000.
+    - Reads in the size of the data as a dword, likely usize datatype. stores this at 0x10
+    - Allocates memory, and reads in the data into allocation
+
+
+```
+| Offset | Size  | Description                                          |
+| ------ | ----- | ---------------------------------------------------- |
+| 0x00   | byte  | some index or id value                               |
+| 0x04   | dword | pointer to data on heap                              |
+| 0x08   | dword | unknown, haven't seen it used yet                    |
+| 0x0c   | dword | size of allocation on heap                           |
+| 0x10   | dword | size of data in save                                 | 
+| 0x14   | dword | unknown, generally 0x00000000 read in from save data |
+| 0x18   | dword | pointer to next item in list                         |
+``` 
+
+Here's how the base structure of the decompressed save looks
+
+![image](https://github.com/user-attachments/assets/ddd673d3-35d7-429c-90dd-7246c49cdffa)
+![image](https://github.com/user-attachments/assets/9bb6917b-0be9-4719-ac0b-7a54472a21e4)
+
+The scenarios use the same structure, as an example here is the section for one of the gangs in the South of the River scenario:
+
+![image](https://github.com/user-attachments/assets/877c8801-4de5-478e-bc09-78e15340c244)
+
+And their starting money:
+
+![image](https://github.com/user-attachments/assets/f22b214c-7653-4abf-b589-b6186ead74cb)
+
+
