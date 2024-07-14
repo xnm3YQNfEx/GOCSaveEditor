@@ -63,12 +63,12 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
 | 0x18   | dword | pointer to next item in list                         |
 ``` 
 
-Here's how the base structure of the decompressed save looks
+Here's how the base structure of the decompressed South of the River scenario looks, the saves use the same structure
 
 ![image](https://github.com/user-attachments/assets/ddd673d3-35d7-429c-90dd-7246c49cdffa)
 ![image](https://github.com/user-attachments/assets/9bb6917b-0be9-4719-ac0b-7a54472a21e4)
 
-The scenarios use the same structure, as an example here is the section for one of the gangs in the South of the River scenario:
+Here's one of the sections for one of the gangs
 
 ![image](https://github.com/user-attachments/assets/877c8801-4de5-478e-bc09-78e15340c244)
 
