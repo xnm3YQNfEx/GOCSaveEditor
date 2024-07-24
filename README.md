@@ -11,6 +11,11 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
 - Deserialization of game save into another data structure, maybe json?
 - Reserialization of the json back to bytes
 
+## 2024-07-24
+- Initial refactor mostly done, need to add unit tests still
+- Starting to work on save parsing, added function to split the decompressed save into individual sections
+    - Also added function to dump each section to a different file for further analysis
+
 ## 2024-07-14
 - Decompression and compression are both working.
 - Need to do a clean up of the code a bit, after that going to look into using python for a basic front end
