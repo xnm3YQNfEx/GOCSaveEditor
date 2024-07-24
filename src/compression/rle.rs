@@ -21,6 +21,8 @@ impl RLE {
         let max_buffer_len = 126;
     
     
+        // Through this section, can't use the ? operator as it would skip the final handling of remaining temp buffer
+        // A failed read from the iterator is assumed to just mean end of the input Vec
         let mut iterator = input.iter();
     
         if let Some(byte) = iterator.next() {
