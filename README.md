@@ -4,6 +4,15 @@ Gangsters Organized Crime Save and Scenario Editor
 This is an attempt at reversing the save file format for the 1998 classic Gangsters Organized Crime. 
 Very much a work in progress, will likely be bugs, and likely a project that will be abandoned when I get bored.
 
+## Building
+- Starting with an existing Rust development environment
+- Run `cargo build`
+
+## Running
+- Currently there is no CLI or GUI interface, no arguments, nothing aside from some hard coded paths in main.rs
+- Some examples of how to do compression and decompression are already present, just update as needed first.
+- Save and then run `cargo run`
+
 ## Main goals
 - Save decompresson
 - Save recompression
@@ -15,6 +24,9 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
 - Initial refactor mostly done, need to add unit tests still
 - Starting to work on save parsing, added function to split the decompressed save into individual sections
     - Also added function to dump each section to a different file for further analysis
+- Currently evaluating possible Rust GUI frameworks. 
+    - Ideally cross platform (mostly as a learning opportunity for use in future projects)
+    - Choices are GTK3, GTK4, FLTK, and Tauri
 
 ## 2024-07-14
 - Decompression and compression are both working.
@@ -45,7 +57,6 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
     - If negative, insert the following byte into the output inverse n (making it positive) times
     - Can have multiple chunks that are the same type in a row, with maximum length of a chunk being 126
 - Afterwards, the data is then used to construct various structs and objects for the games state
-
 
 ## Save file structure
 - first dword appears to be a count of objects, so far it's always been 0x19 for both saves and scenarios.

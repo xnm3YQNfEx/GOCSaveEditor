@@ -93,7 +93,11 @@ impl HuffmanNode {
 
         while queue.len() > 1 {
             if let (Some(left), Some(right)) = (queue.pop(), queue.pop()) {
-                queue.push(Self::create_inner_node(left.frequency + right.frequency, left, right))
+                queue.push(Self::create_inner_node(
+                    left.frequency + right.frequency,
+                    left,
+                    right,
+                ))
             }
         }
 
@@ -117,13 +121,12 @@ impl HuffmanNode {
                 match direction {
                     0x4c => left = HuffmanNode::from_stream(iterator_ref),
                     0x52 => right = HuffmanNode::from_stream(iterator_ref),
-                    _ => return None, 
-
+                    _ => return None,
                 }
             }
         }
 
-        let symbol= iterator_ref.next()?;
+        let symbol = iterator_ref.next()?;
         if let (Some(left), Some(right)) = (left, right) {
             Some(Box::new(HuffmanNode::create_inner_node(0, *left, *right)))
         } else {
@@ -228,12 +231,12 @@ impl Huffman {
         for key in data.iter() {
             frequencies[*key as usize] += 1;
         }
-    
+
         // Construct the tree based off of the frequencies
         let tree = HuffmanNode::from_frequencies(frequencies);
         let codes = HuffmanCode::from_tree(&tree);
         let codes_array = HuffmanCode::as_array(&codes);
-    
+
         let mut encoded_data = Huffman::encode_tree(&tree.unwrap());
 
         for &symbol in data.iter() {

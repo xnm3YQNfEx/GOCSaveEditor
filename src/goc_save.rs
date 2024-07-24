@@ -1,12 +1,11 @@
-use std::collections::VecDeque;
 use byteorder::{ByteOrder, LittleEndian};
-
+use std::collections::VecDeque;
 
 pub struct SaveSection {
     pub index: u8,
     unknown: u32,
     size: usize,
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
 }
 
 impl SaveSection {
@@ -15,7 +14,7 @@ impl SaveSection {
             index: index,
             unknown: unknown,
             size: size,
-            data: data
+            data: data,
         }
     }
 }
@@ -32,8 +31,7 @@ fn pop_u32(deque: &mut VecDeque<u8>) -> Option<u32> {
     }
 }
 
-pub fn parse_save_sections(data: Vec<u8>) -> Vec<SaveSection>{
-
+pub fn parse_save_sections(data: Vec<u8>) -> Vec<SaveSection> {
     let mut data_queue: VecDeque<u8> = VecDeque::new();
     data_queue.extend(data);
     let mut result: Vec<SaveSection> = Vec::new();
