@@ -20,7 +20,8 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
 - Deserialization of game save into another data structure, maybe json?
 - Reserialization of the json back to bytes
 
-## 2024-07-24
+## Updates
+### 2024-07-24
 - Initial refactor mostly done, need to add unit tests still
 - Starting to work on save parsing, added function to split the decompressed save into individual sections
     - Also added function to dump each section to a different file for further analysis
@@ -28,15 +29,16 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
     - Ideally cross platform (mostly as a learning opportunity for use in future projects)
     - Choices are GTK3, GTK4, FLTK, and Tauri
 
-## 2024-07-14
+### 2024-07-14
 - Decompression and compression are both working.
 - Need to do a clean up of the code a bit, after that going to look into using python for a basic front end
 - Looking into save format now, some details now added below
 
-## 2024-07-10 
+### 2024-07-10 
 - Decompression appears to be working, but I've only tried with a handful of saves, no real testing done yet
 - Compression isn't complete, currently the compressed saves will be corrupted due to not using proper RLE encoding as the first step, should be added soon!
 
+# Save File Details
 ## High level details of how the compression works
 - Saves are not encrypted using anything like the xtx data files were.
 - Saves use a combination of an RLE style compression first, afterwards they use [huffman coding](https://en.wikipedia.org/wiki/Huffman_coding) to compress the save file further
@@ -77,7 +79,7 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
 | 0x10   | dword | size of data in save                                 | 
 | 0x14   | dword | unknown, generally 0x00000000 read in from save data |
 | 0x18   | dword | pointer to next item in list                         |
-``` 
+```
 
 Here's how the base structure of the decompressed South of the River scenario looks, the saves use the same structure
 
@@ -93,3 +95,47 @@ And their starting money:
 ![image](https://github.com/user-attachments/assets/f22b214c-7653-4abf-b589-b6186ead74cb)
 
 
+## Sections
+
+Section numbers here are integer values rather than the hex representation.
+
+### 1
+- Contains economics data, illegal economics data, illegal profit
+- possibly other data files? Though would have to be small ones, only ~1660 bytes left unaccounted for
+- 100 bytes header with quantities of things? possibly small data file in here
+- 30.16kb of economics data
+- 1.6kb of ???
+- 2.1kb of illegal economics data
+- 540 bytes illegal profit data
+
+### 6 
+- Possibly red gang, or player gang?
+
+### 7 
+- Gang data, maybe green?
+
+### 8
+- Gang data, maybe blue?
+
+### 9
+- Gang data, maybe orange?
+
+### 13
+- Street names
+
+### 17
+- Don't know, haven't come across this in a save yet
+
+### 18
+- Last week report data
+- 785 bytes unaccounted for, with mostly null values
+
+### 24
+- Contains a string with the version of the game that produced the save/scenario.
+- String seems to be both null terminated and have a length?
+- GOG Release uses "V1.0b2r291098-01(E)"
+- Have yet to review, I'm assuming it's checked before rest of save is parsed? 
+
+### 25
+- Contains some info about scenario used to start game
+- Have yet to look more into it, so unknown really what it's used for
