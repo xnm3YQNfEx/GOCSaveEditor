@@ -97,16 +97,31 @@ And their starting money:
 
 ## Sections
 
-Section numbers here are integer values rather than the hex representation.
+Section numbers here are integer values rather than the hex representation. Only sections with some findings are listed below.
 
-### 1
-- Contains economics data, illegal economics data, illegal profit
-- possibly other data files? Though would have to be small ones, only ~1660 bytes left unaccounted for
-- 100 bytes header with quantities of things? possibly small data file in here
-- 30.16kb of economics data
-- 1.6kb of ???
-- 2.1kb of illegal economics data
-- 540 bytes illegal profit data
+### 1 - Economy Data
+Section is mostly just the same data found in xtx data files. The game doesn't read in this data from xtx files when loading a save/scenario with the exception of the strings from economics.xtx and illegal economics.xtx. Assumption is they are more so a template to make localisation easy. When starting a new game from a scenario, the number of businesses within the two xtx files that strings are read from must match the number of businesses in the scenario. It does appear to be possible to change the number of businesses if you don't use scenarios, and start a new game. There's 69 bytes of data (nice) that I'm still not sure what it's for. I think 64 bytes are related to Economics.xtx in some way. Appears to be 16 u32 values?
+
+0, 117, 150, 152, 151, 153, 156, 170, 2, 2, 2, 2, 79, 30, 33, 23
+
+```
+Hex View  00 01 02 03 04 05 06 07  08 09 0A 0B 0C 0D 0E 0F
+ 
+00000000  00 00 00 00 75 00 00 00  96 00 00 00 98 00 00 00  ....u...........
+00000010  97 00 00 00 99 00 00 00  9C 00 00 00 AA 00 00 00  ................
+00000020  02 00 00 00 02 00 00 00  02 00 00 00 02 00 00 00  ................
+00000030  4F 00 00 00 1E 00 00 00  21 00 00 00 17 00 00 00  O.......!.......
+```
+
+Contains data from these files:
+- Economics.xtx
+- Running Costs.xtx
+- Income Groups.xtx
+- Empty Land Cost.xtx
+- Market Share.xtx
+- Land Value Reductions.xtx
+- Illegal Economics.xtx
+- Illegal Profit.xtx
 
 ### 6 
 - Possibly red gang, or player gang?
