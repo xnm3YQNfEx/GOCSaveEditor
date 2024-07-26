@@ -1,8 +1,11 @@
 use std::fs;
 use std::io::Write;
 
+use xtx::XTX;
+
 pub mod compression;
 pub mod goc_save;
+pub mod xtx;
 
 // input_path - Path to existing decompressed save file, including filename
 // output_path - Path and filename for outputting the compressed save. directories must exist already!
@@ -51,5 +54,18 @@ pub fn output_save_sections(input_path: &str, output_path: &str) {
         }
     } else {
         println!("Failed to load save data!");
+    }
+}
+
+pub fn xtx_to_txt(input_path: &str) {
+    let data = fs::read(input_path);
+
+    if data.is_ok() {
+        let decrypted = XTX::decrypt(&data.unwrap());
+        let out_path = input_path.replace("xtx", "") + "txt";
+        let mut outfile = fs::File::create(out_path).expect("Should have been able to create file");
+        outfile
+            .write_all(&decrypted)
+            .expect("Should have been able to write out section data!");
     }
 }
