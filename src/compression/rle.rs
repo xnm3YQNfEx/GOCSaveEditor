@@ -115,7 +115,6 @@ impl RLE {
         let mut output: Vec<u8> = Vec::new();
         let mut iterator = input.iter();
 
-        //while buf.read_pos < buf.data.len() {
         while let Some(length) = iterator.next() {
             let length = *length as i8;
 
@@ -133,9 +132,7 @@ impl RLE {
                     }
                     // TODO: Should maybe handle condition where Some is None? Just slap in a panic to debug later
                 }
-            } else {
-                return None;
-            }
+            } 
             // TODO: Should maybe handle condition where Some is None? Just slap in a panic to debug later
         }
         Some(output)
