@@ -1,5 +1,6 @@
 use std::fs;
 use std::io::Write;
+use std::path::Path;
 
 use xtx::XTX;
 
@@ -68,4 +69,26 @@ pub fn xtx_to_txt(input_path: &str) {
             .write_all(&decrypted)
             .expect("Should have been able to write out section data!");
     }
+}
+
+pub fn dump_all_saves(dir_path: &str) -> std::io::Result<()> {
+    let dir = fs::read_dir(dir_path)?;
+
+    for entry in dir {
+        let entry = entry?;
+        let file_path = entry.path();
+        let file_name = file_path.file_stem().unwrap().to_str().unwrap();
+
+        let folder_name = format!("{}/{}", dir_path, file_name);
+        let folder_path = Path::new(&folder_name);
+        let output_base = format!("{}/{}.bin", folder_name, file_name);
+
+        if !folder_path.exists() {
+            fs::create_dir_all(folder_path)?;
+        }
+        decompress_file(file_path.to_str().unwrap(), &output_base);
+        output_save_sections(&output_base, &output_base);
+    }
+
+    Ok(())
 }
