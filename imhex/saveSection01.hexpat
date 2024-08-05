@@ -27,17 +27,16 @@ struct businessType {
     u8 policePatrolMin;
     u8 policePatrolMax;
     u8 fbiGuard;
-    u16 storageCapacity;
+    u8 storageCapacity;
+    u8 unknown6;
     u32 cityCapacityMax;
     u32 cityCapacityMin;
     u32 cityCapacityMaxAgain;
     u32 unknownMaybeNumberPresent;
     u32 floatMoney;
     u32 setupCosts;
-    u32 unknown1;
-    u32 unknown2;
-    u32 unknown3;
-    u32 unknown4;
+    u64 unknown1;
+    u64 unknown2;
     u8 liquor;
     u8 stolenGoods;
     u8 counterfeit;
@@ -45,7 +44,8 @@ struct businessType {
     u8 isConsumer;
     u8 policeOutsideMin;
     u8 policeOutsideMax;
-    u16 unknown5;
+    u8 unknown7;
+    u8 unknown8;
     indexedStr anStr;
     indexedStr theStr;
     indexedStr atTheStr;
@@ -125,27 +125,27 @@ struct incomeGroupsData {
 
 struct emptyLandCostData {
     u8 columns; //Should match number of empty land types in economics.txt
-    u16 row1 [columns]; // different rows are used likely by land value for the block;
-    u16 row2 [columns];
-    u16 row3 [columns];
-    u16 row4 [columns];
-    u16 row5 [columns];
-    u16 row6 [columns];
-    u16 row7 [columns];
-    u16 row8 [columns];
-    u16 row9 [columns];
-    u16 row10 [columns];
-    u16 row11 [columns];
-    u16 row12 [columns];
-    u16 row13 [columns];
-    u16 row14 [columns];
-    u16 row15 [columns];
-    u16 row16 [columns];
+    u16 ELC_row1 [columns]; // different rows are used likely by land value for the block;
+    u16 ELC_row2 [columns];
+    u16 ELC_row3 [columns];
+    u16 ELC_row4 [columns];
+    u16 ELC_row5 [columns];
+    u16 ELC_row6 [columns];
+    u16 ELC_row7 [columns];
+    u16 ELC_row8 [columns];
+    u16 ELC_row9 [columns];
+    u16 ELC_row10 [columns];
+    u16 ELC_row11 [columns];
+    u16 ELC_row12 [columns];
+    u16 ELC_row13 [columns];
+    u16 ELC_row14 [columns];
+    u16 ELC_row15 [columns];
+    u16 ELC_row16 [columns];
 };
 
 struct marketShareData {
     u8 count;
-    u8 values[count];
+    u8 MarketShare_values[count];
 };
 
 struct landValueReductionsData {
@@ -175,14 +175,17 @@ struct illegalBusniessData {
     u8 buildingRef;
     u8 unionType; // unknown, just guessing;
     u8 capacity;
-    u8 liquor;
-    u8 stolenGoods;
+    
+    u64 unknown1;
+    u64 unknown2;
+    u16 setupCosts;
+    u16 unknown3;
+    u8 liquor;      
+    u8 stolenGoods; 
     u8 counterfeit;
     u8 isSupplier;
     u8 isConsumer;
-    u8 unknown[11];
-    u16 setupCosts;
-    u8 unknon2[7];
+
     indexedStr aStr;
     indexedStr theStr;
     indexedStr atTheStr;
@@ -191,7 +194,7 @@ struct illegalBusniessData {
 };
 
 struct illegalEconomicsData {
-    illegalBusniessData illegalBusinesses[15];
+    illegalBusniessData illegalBusinesses[15]; // This is hard coded in the game to only allow for 15 illegal businesses!
 };
 
 struct illegalProfitsData {
