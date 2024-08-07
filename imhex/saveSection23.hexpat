@@ -2,6 +2,9 @@
 ================================== Section 23 ==================================
 \******************************************************************************/
 
+// Possibly elections related?
+// Setting the local_01 value to FF and loading resulted in election starting
+
 // No idea where the actual constructor is yet...
 // This is already present within the game object
 struct fn_004bbd30 {

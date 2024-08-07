@@ -1,5 +1,12 @@
-struct saveSection11 {
-    u8 s11_data[0x178]; // Read into 0x1220 offset
+/******************************************************************************\
+================================== Section 11 ==================================
+\******************************************************************************/
+
+// Static size, read in all at once into main game object
+
+// Section handling starts @ 0x0065802e
+struct section11 {
+    u8 mgobj_0x1220[0x178];
 };
 
-saveSection11 savesection11_at_0x00 @ 0x00;
+section11 section11_at_0x00 @ 0x00;
