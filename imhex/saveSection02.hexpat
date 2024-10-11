@@ -1,6 +1,8 @@
 #pragma pattern_limit 100000000000
 #pragma array_limit 1000000000000
-
+#include <std/string.pat>
+#include <std/io.pat>
+#include <std/core.pat>
 // I believe this is data for the city. Tiles, businesses, etc?
 // Naming is an absolute mess as I have no clue what any values actually do, though the structure should be mostly correct.
 // Data types are unknown but the bit sizes should be correct.
@@ -56,19 +58,19 @@ struct obj_007815a8 {
 
 struct obj_00780890 {
     u8 obj_00780890_01;
-    u8 obj_00780890_02;
-    u8 obj_00780890_03;
+    u8 col;
+    u8 row;
     u8 obj_00780890_04;
     u32 obj_00780890_05;
     obj_007815a8 obj_00780890_06[obj_00780890_05];
     u8 obj_00780890_07;
     // Following is read in by separate function 0x00726430
-    u8 obj_00780890_08;
-    u8 obj_00780890_09[obj_00780890_08 * 2];
-    u8 obj_00780890_10[obj_00780890_08];
-    u16 obj_00780890_11;
-    u16 obj_00780890_12;
-    u16 obj_00780890_13;
+    u8 floors_count;
+    u16 floors_idx[floors_count];
+    u8 floors_up_level[floors_count];
+    u16 tile_grp_idx;
+    u16 med_floor_idx;
+    u16 basement_idx;
     u8 obj_00780890_14;
 };
 
@@ -242,23 +244,28 @@ struct s02_us04_s01 {
 // Possible constructor at 0x00645890
 // Read in  at 0x0054ee90
 // This is a bit confusing to follow with switch statements and more fun stuff
-struct s02_us04 {
+struct map_tiles {
+
+
+    u16 id = std::core::array_index();
+    
+    std::print("{}", id);
     u8 s02us04_01;
     u8 s02us04_02;
     u8 s02us04_03;
     u8 s02us04_04;
-    u32 s02us04_05;
+    u32 little_map_idx;
     u32 s02us04_06;
     u8 s02us04_07;
     u32 s02us04_08;
     // I don't understand the logic around this yet, it reads in 5, and then based off of the ptr address of the "marker", it will loop again?
     
     
-    s02_us04_s01 s02us04_09[5];
-    s02_us04_s01 s02us04_10[5];
-    s02_us04_s01 s02us04_11[5];    
-    s02_us04_s01 s02us04_12[5];
-    s02_us04_s01 s02us04_13[5];    
+    s02_us04_s01 line_1[5];
+    s02_us04_s01 line_2[5];
+    s02_us04_s01 line_3[5];    
+    s02_us04_s01 line_4[5];
+    s02_us04_s01 line_5[5];    
 };
 
 struct s02_us05_s02 {
@@ -292,8 +299,8 @@ struct s02_us05 {
 struct section02 { // Constructed in main section handling around 0x0065809a
     u32 unknown1; // Used to set globals 0x009008e4 and 0x009008e0
     u32 unknown2;   
-    u32 unknown3;
-    u32 unknown4;
+    u32 width;
+    u32 height;
     u32 unknown5;
     u32 unknown6;
     u8 unknown7;
@@ -325,7 +332,7 @@ struct section02 { // Constructed in main section handling around 0x0065809a
     s02_us02 unknown33;
     s02_us02 unknown34;
     s02_us03 unknown35[0x549];
-    s02_us04 unknown36[unknown3 * unknown4];
+    map_tiles littlemapidx[width * height];
     s02_us05 unknown37;
 };
 
