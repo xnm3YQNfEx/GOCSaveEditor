@@ -21,6 +21,10 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
 - Reserialization of the json back to bytes
 
 ## Updates
+### 2024-10-12
+- Got a little burned out trying to do a deep dive into the Gang data section.
+- Good progress on it but needed to take a break for a bit.
+
 ### 2024-07-24
 - Initial refactor mostly done, need to add unit tests still
 - Starting to work on save parsing, added function to split the decompressed save into individual sections
