@@ -1,8 +1,12 @@
 # GOCSaveEditor
 Gangsters Organized Crime Save and Scenario Editor
 
-This is an attempt at reversing the save file format for the 1998 classic Gangsters Organized Crime. 
+This was an attempt at reversing the save file format for the 1998 classic Gangsters Organized Crime. 
 Very much a work in progress, will likely be bugs, and likely a project that will be abandoned when I get bored.
+
+## Current Status - Stopped
+Development has stopped, I've moved onto other games and will likely not revisit this for a long period of time.
+If anybody wants to contribute, feel free to make PR's against this repo. I will still find time to check and merge.
 
 ## Building
 - Starting with an existing Rust development environment
@@ -21,6 +25,10 @@ Very much a work in progress, will likely be bugs, and likely a project that wil
 - Reserialization of the json back to bytes
 
 ## Updates
+### 2025-01-05
+- Decided to stop work, and update readme to indicate the status change.
+- May come back to this down the road though have other priorities that will likely take my focus for a long period of time (min of many months, possibly year or two)
+
 ### 2024-10-12
 - Got a little burned out trying to do a deep dive into the Gang data section.
 - Good progress on it but needed to take a break for a bit.
